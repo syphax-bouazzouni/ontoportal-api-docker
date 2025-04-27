@@ -4,5 +4,5 @@ data/solr/*
 data/mgrep/*
 data/logs/api/*
 data/logs/cron/*
+data/reports/*
 .env
-data-backup-*
