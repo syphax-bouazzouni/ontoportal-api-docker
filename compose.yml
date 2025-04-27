@@ -2,24 +2,20 @@ x-app: &app
   image: agroportal/ontologies_api:master
   env_file:
     - .env
-  depends_on: &depends_on
-    solr:
-      condition: service_started
-    redis-cache:
-      condition: service_healthy
-    redis-persistent:
-      condition: service_healthy
-    mgrep:
-      condition: service_started
-    virtuoso:
-      condition: service_started
-    mgrep-watcher:
-      condition: service_started
+  depends_on:
+      - solr
+      - redis-cache
+      - redis-persistent
+      - mgrep
+      - virtuoso
+      - mgrep-watcher
   volumes:
-    - ./data/repository:${REPOSITORY_FOLDER}
+    - ./data/repository:/srv/ontoportal/data/repository
     - ./data/reports:/srv/ontoportal/data/reports
     - ./data/mgrep:/srv/ontoportal/data/mgrep
-    - ./data/logs/cron:${CRON_LOGS}
+    - ./data/logs/cron:/srv/ontoportal/ncbo_cron/logs
+    - ./data/provision:/srv/ontoportal/ncbo_cron/provision
+    - ./data/logs/api:/srv/ontoportal/ontologies_api/logs
   stdin_open: true
   tty: true
   command: /bin/bash
@@ -27,12 +23,16 @@ x-app: &app
 services:
   api:
     <<: *app
-    depends_on:
-      <<: *depends_on
-      ncbo_cron:
-        condition: service_started
     ports:
       - "9393:9393"
+    command: bundle exec unicorn -E production -l 9393
+    depends_on:
+      - solr
+      - redis-cache
+      - redis-persistent
+      - mgrep
+      - virtuoso
+      - ncbo_cron
 
   ncbo_cron:
     <<: *app
@@ -41,13 +41,10 @@ services:
 
   mgrep:
     image: ontoportal/mgrep:0.0.3
-    platform: linux/amd64
-    entrypoint: ["/bin/sh", "-c", "
+    entrypoint: [ "/bin/sh", "-c", "
       [ ! -f /srv/mgrep/dictionary/dictionary.txt ] && echo '-376244815943450933\tLES_DOULEURS' > /srv/mgrep/dictionary/dictionary.txt;
       exec /start-mgrep.sh
-    "]
-    ports:
-      - "55556:55555"
+    " ]
     volumes:
       - ./data/mgrep:/srv/mgrep/dictionary
 
@@ -63,7 +60,7 @@ services:
           echo 'Watching for changes in /srv/mgrep/dictionary/dictionary.txt';
           inotifywait -e modify,create,delete,move /srv/mgrep/dictionary/dictionary.txt;
           echo 'Change detected, restarting mgrep container';
-          docker restart $(docker ps -q -f name=ontoportal-api-docker-mgrep-1);
+          docker restart $$(docker ps -q -f name=ontoportal-api_mgrep.1);
         done
       "
     depends_on:
@@ -86,7 +83,7 @@ services:
     ports:
       - "6380:6379"
     volumes:
-      - ./data/redis-persistent:/data
+      - redis-persistent:/data
       - ./redis-persistent.conf:/usr/local/etc/redis/redis.conf
 
     command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
@@ -118,12 +115,12 @@ services:
     volumes:
       - ./config/initdb.d:/opt/virtuoso-opensource/initdb.d
       - ./data/virtuoso/database:/opt/virtuoso-opensource/database
-    healthcheck:
-      test: [ "CMD-SHELL", "curl -sf http://localhost:8890/sparql || exit 1" ]
-      start_period: 10s
-      interval: 60s
-      timeout: 5s
-      retries: 3
+#    healthcheck:
+#      test: [ "CMD-SHELL", "curl -sf http://localhost:8890/sparql || exit 1" ]
+#      start_period: 10s
+#      interval: 60s
+#      timeout: 5s
+#      retries: 3
 
   solr:
     image: solr:9.1
@@ -132,3 +129,6 @@ services:
     command: bin/solr start -cloud -f
     volumes:
       - ./data/solr:/var/solr/data
+
+volumes:
+  redis-persistent:
