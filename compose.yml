@@ -13,6 +13,8 @@ x-app: &app
       condition: service_started
     virtuoso:
       condition: service_started
+    mgrep-watcher:
+      condition: service_started
   volumes:
     - ./data/repository:${REPOSITORY_FOLDER}
     - ./data/reports:/srv/ontoportal/data/reports
@@ -48,6 +50,24 @@ services:
       - "55556:55555"
     volumes:
       - ./data/mgrep:/srv/mgrep/dictionary
+
+  mgrep-watcher:
+    image: alpine
+    volumes:
+      - ./data/mgrep:/srv/mgrep/dictionary
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: >
+      sh -c "
+        apk add --no-cache inotify-tools docker-cli;
+        while true; do
+          echo 'Watching for changes in /srv/mgrep/dictionary/dictionary.txt';
+          inotifywait -e modify,create,delete,move /srv/mgrep/dictionary/dictionary.txt;
+          echo 'Change detected, restarting mgrep container';
+          docker restart $(docker ps -q -f name=ontoportal-api-docker-mgrep-1);
+        done
+      "
+    depends_on:
+      - mgrep
 
   redis-cache:
     image: redis
