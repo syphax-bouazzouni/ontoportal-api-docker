@@ -1,2 +1,3 @@
-bash_cmd="bundle exec unicorn -E production -l 9393"
-docker compose run --rm --service-ports api   bash -c "$bash_cmd"
+docker stack deploy -c compose.yml ontoportal-api
+sleep 5
+docker logs "$(docker ps -q -f name=ontoportal-api_api | head -n 1)" -f
