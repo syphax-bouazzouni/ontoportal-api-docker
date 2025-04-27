@@ -14,8 +14,6 @@ services:
       CACHE_HOST: cache
       RAILS_ENV: "production"
       BUNDLE_WITHOUT: "development test"
-      #SECRET_KEY_BASE: TODO
-      #RAILS_MASTER_KEY: TODO
       BIOPORTAL_WEB_UI_DATABASE_PASSWORD: root
       MEMCACHE_SERVERS: "cache:11211"
     tmpfs:
