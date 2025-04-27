@@ -1,3 +1,8 @@
-data
+data/virtuoso/database/*
+data/repository/*
+data/solr/*
+data/mgrep/*
+data/logs/api/*
+data/logs/cron/*
 .env
 data-backup-*
