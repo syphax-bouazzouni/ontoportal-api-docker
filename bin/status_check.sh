@@ -2,15 +2,36 @@ status_ok() {
   curl -sSf $1 >/dev/null 2>&1
 }
 
-API_URL=${1:-"http://localhost:9393"}
-# Check API is up
+docker_service_up() {
+  SERVICE_NAME=$1
+  status=$(docker compose ps --format '{{.Status}}' $SERVICE_NAME | grep -E "Up|running")
+  if [ -z "$status" ]; then
+    echo "[x] $SERVICE_NAME is not running"
+  else
+    echo "[✔︎] $SERVICE_NAME is running"
+  fi
+}
 
+API_URL=${1:-"http://localhost:9393"}
+
+# Check API is up
 if status_ok "$API_URL"; then
   echo "[✔︎] API is up and running!"
 else
-  echo "[x] Timed out waiting for the server to be up."
+  echo "[x] API is not running"
   exit 1
 fi
+
+# Check SOLR is up
+docker_service_up "solr"
+# Check Virtuoso is up
+docker_service_up "virtuoso"
+
+# Check Redis is up
+docker_service_up "redis-cache"
+
+# Check CRON worker is up
+docker_service_up "ncbo_cron"
 
 # Check user admin created
 if status_ok "$API_URL/users/admin"; then
