@@ -12,7 +12,7 @@ start() {
 
 	source "$env_path"
 
-	docker_run_cmd="docker compose -f ./compose.yml run --rm --service-ports ncbo_cron bash -c \"$bash_cmd\""
+	docker_run_cmd="docker exec -it $(docker ps -q -f name=cron) bash -c \"$bash_cmd\""
 
 	echo "[+] Starting the CRON"
 	eval "$docker_run_cmd"

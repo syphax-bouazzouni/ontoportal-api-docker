@@ -4,7 +4,7 @@ status_ok() {
 
 docker_service_up() {
   SERVICE_NAME=$1
-  status=$(docker compose ps --format '{{.Status}}' $SERVICE_NAME | grep -E "Up|running")
+  status=$(docker ps  -f name=$SERVICE_NAME --format '{{.Status}}' | grep -E "Up|running")
   if [ -z "$status" ]; then
     echo "[x] $SERVICE_NAME is not running"
   else
