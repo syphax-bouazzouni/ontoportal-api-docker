@@ -132,3 +132,8 @@ services:
 
 volumes:
   redis-persistent:
+
+networks:
+  default:
+    external:
+      name: shared-network

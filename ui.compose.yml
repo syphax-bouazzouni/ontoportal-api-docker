@@ -1,0 +1,58 @@
+services:
+  ui:
+    image: agroportal/ontoportal_web_ui:master
+    env_file:
+      - ".env"
+    tty: true
+    volumes:
+      - bundle:/srv/ontoportal/bundle
+      - node:/node_modules
+      - assets:/app/public/assets
+    environment:
+      BUNDLE_PATH: /srv/ontoportal/bundle
+      DB_HOST: db
+      CACHE_HOST: cache
+      RAILS_ENV: "production"
+      BUNDLE_WITHOUT: "development test"
+      #SECRET_KEY_BASE: TODO
+      #RAILS_MASTER_KEY: TODO
+      BIOPORTAL_WEB_UI_DATABASE_PASSWORD: root
+      MEMCACHE_SERVERS: "cache:11211"
+    tmpfs:
+      - /tmp
+      - /app/tmp/pids
+    command: >
+      bash -c "
+        bundle install;
+        EDITOR='nano' bin/rails credentials:edit;
+        bin/rails db:prepare;
+        bundle exec puma -C config/puma.rb;
+      "
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+      - cache
+
+  db:
+    image: "mysql:8.0"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+
+  cache:
+    image: memcached:latest
+    command: [ "-m", "1024" ]
+
+volumes:
+  mysql-data:
+  rails_cache:
+  assets:
+  node:
+  bundle:
+
+networks:
+  default:
+    external:
+      name: shared-network
