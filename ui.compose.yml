@@ -33,11 +33,11 @@ services:
       - cache
 
   db:
-    image: "mysql:8.0"
+    image: "mysql:5.7"
+    env_file:
+      - .env
     volumes:
       - mysql-data:/var/lib/mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: root
 
   cache:
     image: memcached:latest

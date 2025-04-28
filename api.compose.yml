@@ -115,12 +115,6 @@ services:
     volumes:
       - ./config/initdb.d:/opt/virtuoso-opensource/initdb.d
       - ./data/virtuoso/database:/opt/virtuoso-opensource/database
-#    healthcheck:
-#      test: [ "CMD-SHELL", "curl -sf http://localhost:8890/sparql || exit 1" ]
-#      start_period: 10s
-#      interval: 60s
-#      timeout: 5s
-#      retries: 3
 
   solr:
     image: solr:9.1
