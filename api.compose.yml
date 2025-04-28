@@ -117,15 +117,16 @@ services:
       - ./data/virtuoso/database:/opt/virtuoso-opensource/database
 
   solr:
-    image: solr:9.1
+    image: solr:9
     ports:
       - 8983:8983
-    command: bin/solr start -cloud -f
+    command: bin/solr start -cloud
     volumes:
-      - ./data/solr:/var/solr/data
+      - solr_data:/var/solr/data
 
 volumes:
   redis-persistent:
+  solr_data:
 
 networks:
   default:
