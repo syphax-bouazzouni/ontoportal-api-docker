@@ -23,6 +23,7 @@ services:
       bash -c "
         bundle install;
         EDITOR='nano' bin/rails credentials:edit;
+        bin/rails db:create; 
         bin/rails db:prepare;
         bundle exec puma -C config/puma.rb;
       "

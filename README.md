@@ -1,37 +1,57 @@
-## Provisioning API
-> **Warning**: This will remove your data
-Will create an admin user, and import and parse STY ontology from BioPortal.
+# Deploy OntoPortal API and UI in a server
+### Pre-requisites
+    * Docker
+    * Ram > 8GB
+    * Space > 5GB
 
+### Steps
+#### Clone the repo
 ```bash
-./provision.sh
+git clone https://github.com/syphax-bouazzouni/ontoportal-swarm-docker.git
+cd ontoportal-swarm-docker
 ```
-
-## API check status
+#### Init Docker Swarm
 ```bash
-bin/status_check.sh
-```
-
-## API management scripts
-
-## Create a new user
-```bash
-bin/run_cron.sh 'bundle exec rake user:create[username,admin@nodomain.org,password]'
+docker swarm init
 ```
 
 
-## Make a user admin 
-
+#### Create a shared network for the API and UI
 ```bash
-bin/run_cron.sh 'bundle exec rake user:make_admin[username]'
+docker network create --driver=overlay --attachable --opt encrypted shared-network
 ```
 
-## Import an ontology from another OntoPortal instance
+#### Create an .env file and edit it with your own values
 ```bash
-bin/run_cron.sh 'bundle exec bin/ncbo_ontology_import --admin-user username --ontologies <ONTOLOGY_ACRONYM> --from-apikey <API_KEY> --from <API_URL>'"
+cp .env.sample .env
 ```
 
-## Process an ontology
+#### Deploy the API stack
 ```bash
-bin/run_cron.sh 'bundle exec bin/ncbo_ontology_process --ontologies <ONTOLOGY_ACRONYM>'
+docker stack deploy -c api.compose.yml ontoportal-api
 ```
+
+#### Deploy the UI stack
+```bash
+docker stack deploy -c ui.compose.yml ontoportal-ui
+```
+
+#### (OPTIONAL) Deploy Swarmpit to help manage and monitor the swarm cluster
+```bash
+ docker run -it --rm \                              
+  --name swarmpit-installer \
+  --volume /var/run/docker.sock:/var/run/docker.sock \
+  swarmpit/install:1.9
+```
+
+#### Provisioning admin user and importing STY
+```bash
+# Create the admin user with a random password
+docker exec -it $(docker ps -q -f name=ontoportal-api_ncbo_cron) bash -c './provision/create_admin_user.sh'
+```
+```bash
+# Import and parse the STY ontology from the NCBO BioPortal
+docker exec -it $(docker ps -q -f name=ontoportal-api_ncbo_cron) bash -c './provision/create_parse_sty.sh'
+```
+
 
