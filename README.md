@@ -1,4 +1,6 @@
 # Deploy OntoPortal API and UI in a server
+<img width="1495" alt="image" src="https://github.com/user-attachments/assets/10dc2feb-2e33-49c7-ae7a-55c68a43a88d" />
+
 ### Pre-requisites
     * Docker
     * Ram > 8GB
