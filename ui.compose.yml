@@ -27,14 +27,18 @@ services:
         bin/rails db:prepare;
         bundle exec puma -C config/puma.rb;
       "
-    ports:
-      - "3000:3000"
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.ui.rule=Host(`local.test`)"
+        - "traefik.http.routers.ui.entrypoints=web"
+        - "traefik.http.services.ui.loadbalancer.server.port=3000"
     depends_on:
       - db
       - cache
 
   db:
-    image: "mysql:5.7"
+    image: mysql:8.4.5
     env_file:
       - .env
     volumes:

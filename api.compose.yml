@@ -23,9 +23,13 @@ x-app: &app
 services:
   api:
     <<: *app
-    ports:
-      - "9393:9393"
     command: bundle exec unicorn -E production -l 9393
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.api.rule=Host(`data.local.test`)"
+        - "traefik.http.routers.api.entrypoints=web"
+        - "traefik.http.services.api.loadbalancer.server.port=9393"
     depends_on:
       - solr
       - redis-cache
@@ -117,10 +121,10 @@ services:
       - ./data/virtuoso/database:/opt/virtuoso-opensource/database
 
   solr:
-    image: solr:9
+    image: solr:8.11.4
     ports:
       - 8983:8983
-    command: bin/solr start -cloud
+    command: bin/solr start -cloud -f
     volumes:
       - solr_data:/var/solr/data
 
