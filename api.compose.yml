@@ -27,9 +27,11 @@ services:
     deploy:
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.api.rule=Host(`data.local.test`)"
-        - "traefik.http.routers.api.entrypoints=web"
-        - "traefik.http.services.api.loadbalancer.server.port=9393"
+        - "traefik.http.routers.api-service.rule=Host(`data.local.test`)"
+        - "traefik.http.services.api-service.loadbalancer.server.port=9393"
+        - "traefik.http.routers.api-service.tls=true"
+        - "traefik.http.routers.api-service.entrypoints=web,websecure"
+        - 'traefik.http.routers.api-service.tls.certresolver=leresolver'
     depends_on:
       - solr
       - redis-cache

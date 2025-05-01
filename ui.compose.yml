@@ -30,9 +30,11 @@ services:
     deploy:
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.ui.rule=Host(`local.test`)"
-        - "traefik.http.routers.ui.entrypoints=web"
-        - "traefik.http.services.ui.loadbalancer.server.port=3000"
+        - "traefik.http.routers.ui-service.rule=Host(`local.test`)"
+        - "traefik.http.services.ui-service.loadbalancer.server.port=3000"
+        - "traefik.http.routers.ui-service.tls=true"
+        - "traefik.http.routers.ui-service.entrypoints=web,websecure"
+        - 'traefik.http.routers.ui-service.tls.certresolver=leresolver'
     depends_on:
       - db
       - cache

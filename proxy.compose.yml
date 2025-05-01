@@ -2,27 +2,47 @@ version: '3.8'
 
 services:
   traefik:
-    image: traefik:v2.11
+    image: traefik:v3.0
     command:
-      - "--providers.docker=true"
-      - "--providers.docker.swarmMode=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--api.dashboard=true"
-      - "--api.insecure=true"
-      - "--entrypoints.web.address=:80"
-      - "--log.level=DEBUG"
+      # Provider configuration - using Swarm provider instead of Docker provider with swarmMode
+      - --providers.swarm=true
+      - --providers.swarm.exposedByDefault=false
+      - --providers.swarm.network=shared-network
+
+      # EntryPoints configuration
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+
+      # HTTP to HTTPS redirect
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+
+      # API and Dashboard
+      - --api=true
+      - --api.dashboard=true
+      - --api.insecure=true
+
+      # Logging
+      - --log.level=DEBUG
+
+      # ACME/Let's Encrypt configuration
+      - --certificatesresolvers.leresolver.acme.caserver=https://acme-v02.api.letsencrypt.org/directory
+      - --certificatesresolvers.leresolver.acme.email=bouazounisyphax@gmail.com
+      - --certificatesresolvers.leresolver.acme.storage=/le/acme.json
+      - --certificatesresolvers.leresolver.acme.tlschallenge=true
     ports:
       - "80:80"
+      - "443:443"
       - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - ./data/traefik/acme.json:/le/acme.json
+    networks:
+      - shared-network
     deploy:
       placement:
         constraints:
           - node.role == manager
-    networks:
-      - shared-network
 
 networks:
   shared-network:
