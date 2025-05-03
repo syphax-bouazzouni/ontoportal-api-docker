@@ -24,14 +24,8 @@ services:
   api:
     <<: *app
     command: bundle exec unicorn -E production -l 9393
-    deploy:
-      labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.api-service.rule=Host(`data.local.test`)"
-        - "traefik.http.services.api-service.loadbalancer.server.port=9393"
-        - "traefik.http.routers.api-service.tls=true"
-        - "traefik.http.routers.api-service.entrypoints=web,websecure"
-        - 'traefik.http.routers.api-service.tls.certresolver=leresolver'
+    ports:
+      - "9393:9393"
     depends_on:
       - solr
       - redis-cache

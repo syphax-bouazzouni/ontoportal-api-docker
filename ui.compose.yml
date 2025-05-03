@@ -27,14 +27,8 @@ services:
         bin/rails db:prepare;
         bundle exec puma -C config/puma.rb;
       "
-    deploy:
-      labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.ui-service.rule=Host(`local.test`)"
-        - "traefik.http.services.ui-service.loadbalancer.server.port=3000"
-        - "traefik.http.routers.ui-service.tls=true"
-        - "traefik.http.routers.ui-service.entrypoints=web,websecure"
-        - 'traefik.http.routers.ui-service.tls.certresolver=leresolver'
+    ports:
+      - "3000:3000"
     depends_on:
       - db
       - cache
